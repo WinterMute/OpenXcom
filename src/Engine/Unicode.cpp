@@ -50,6 +50,7 @@ void getUtf8Locale()
 {
 	std::string loc;
 #ifndef _WIN32
+#ifndef NO_POPEN
 	// Find any UTF-8 locale
 	FILE *fp = popen("locale -a", "r");
 	if (fp != NULL)
@@ -71,6 +72,7 @@ void getUtf8Locale()
 		}
 		pclose(fp);
 	}
+#endif
 #endif
 	// Try a UTF-8 locale (or default if none was found)
 	try

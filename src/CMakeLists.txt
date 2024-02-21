@@ -473,6 +473,21 @@ if ( FORCE_INSTALL_DATA_TO_BIN )
 endif ()
 
 add_executable ( openxcom  ${application_type} ${openxcom_src} ${openxcom_icon} )
+
+if (NINTENDO_WII OR NINTENDO_GAMECUBE)
+  ogc_create_dol(openxcom)
+endif()
+
+if(NINTENDO_3DS)
+  ctr_generate_smdh(openxcom.smdh
+    NAME "OpenXcom"
+  )
+
+  ctr_create_3dsx(openxcom
+    SMDH openxcom.smdh
+  )
+endif()
+
 install ( TARGETS openxcom ${install_dest} DESTINATION ${CMAKE_INSTALL_BINDIR} )
 # Extra link flags for Windows. They need to be set before the SDL/YAML link flags, otherwise you will get strange link errors ('Undefined reference to WinMain@16')
 if ( WIN32 )

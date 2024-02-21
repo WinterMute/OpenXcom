@@ -69,10 +69,12 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <pwd.h>
-#include <execinfo.h>
 #include <cxxabi.h>
-#include <dlfcn.h>
 #include "Unicode.h"
+#ifndef NO_CRASHDUMP
+#include <execinfo.h>
+#include <dlfcn.h>
+#endif
 #endif
 #include <SDL.h>
 #include <SDL_syswm.h>
@@ -142,11 +144,13 @@ void showError(const std::string &error)
 static char const *getHome()
 {
 	char const *home = getenv("HOME");
+#ifndef NO_GETUID
 	if (!home)
 	{
 		struct passwd *const pwd = getpwuid(getuid());
 		home = pwd->pw_dir;
 	}
+#endif
 	return home;
 }
 #endif
@@ -427,6 +431,11 @@ std::string searchDataFolder(const std::string &foldername)
 	return foldername;
 }
 
+#ifdef NO_UMASK
+static mode_t umask(mode_t mask) {
+	return mask;
+}
+#endif
 /**
  * Creates a folder at the specified path.
  * @note Only creates the last folder on the path.
@@ -936,6 +945,7 @@ void setWindowIcon(int, const std::string &unixPath)
  */
 void stackTrace(void *ctx)
 {
+#ifndef NO_STACKTRACE
 #ifdef _WIN32
 #ifndef __NO_DBGHELP
 	const int MAX_SYMBOL_LENGTH = 1024;
@@ -1099,6 +1109,7 @@ void stackTrace(void *ctx)
 	}
 #endif
 	ctx = (void*)ctx;
+#endif
 }
 
 /**
@@ -1135,6 +1146,7 @@ std::string now()
  */
 void crashDump(void *ex, const std::string &err)
 {
+#ifndef NO_CRASHDUMP
 	std::ostringstream error;
 #ifdef _MSC_VER
 	PEXCEPTION_POINTERS exception = (PEXCEPTION_POINTERS)ex;
@@ -1195,6 +1207,7 @@ void crashDump(void *ex, const std::string &err)
 	msg << "More details here: " << Logger::logFile() << std::endl;
 	msg << "If this error was unexpected, please report it to the developers.";
 	showError(msg.str());
+#endif
 }
 
 /**

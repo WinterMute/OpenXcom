@@ -42,6 +42,17 @@
 #include <ppcinline/exec.h>
 #endif
 
+#ifdef NO_POSIX_MEMALIGN
+#include <malloc.h>
+
+int posix_memalign(void **memptr, size_t alignment, size_t size) {
+	if(!memptr) return EINVAL;
+	*memptr = memalign(alignment, size);
+	if (*memptr == NULL) return ENOMEM;
+	return 0;
+}
+#endif
+
 namespace OpenXcom
 {
 
