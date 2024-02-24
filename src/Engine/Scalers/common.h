@@ -37,13 +37,26 @@
 #define trU   0x00000700
 #define trV   0x00000006
 
+#ifndef __wii__
 /* RGB to YUV lookup table */
 extern uint32_t RGBtoYUV[16777216];
+#endif
 
 static inline uint32_t rgb_to_yuv(uint32_t c)
 {
+#ifndef __wii__	
     // Mask against MASK_RGB to discard the alpha channel
     return RGBtoYUV[MASK_RGB & c];
+#else
+	uint32_t r, g, b, y, u, v;
+	r = (c & 0xFF0000) >> 16;
+	g = (c & 0x00FF00) >> 8;
+	b = c & 0x0000FF;
+	y = (uint32_t)(0.299*r + 0.587*g + 0.114*b);
+	u = (uint32_t)(-0.169*r - 0.331*g + 0.5*b) + 128;
+	v = (uint32_t)(0.5*r - 0.419*g - 0.081*b) + 128;
+	return (y << 16) + (u << 8) + v;
+#endif
 }
 
 

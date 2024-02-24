@@ -69,9 +69,11 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <pwd.h>
+#ifndef __wii__
 #include <execinfo.h>
-#include <cxxabi.h>
 #include <dlfcn.h>
+#endif
+#include <cxxabi.h>
 #include "Unicode.h"
 #endif
 #include <SDL.h>
@@ -93,6 +95,7 @@ namespace CrossPlatform
 void getErrorDialog()
 {
 #ifndef _WIN32
+#ifndef __wii__
 	if (system(NULL))
 	{
 		if (getenv("KDE_SESSION_UID") && system("which kdialog 2>&1 > /dev/null") == 0)
@@ -106,6 +109,7 @@ void getErrorDialog()
 		else if (system("which xdialog 2>&1 > /dev/null") == 0)
 			errorDlg = "xdialog --msgbox ";
 	}
+#endif
 #endif
 }
 
@@ -142,11 +146,13 @@ void showError(const std::string &error)
 static char const *getHome()
 {
 	char const *home = getenv("HOME");
+#ifndef __wii__
 	if (!home)
 	{
 		struct passwd *const pwd = getpwuid(getuid());
 		home = pwd->pw_dir;
 	}
+#endif
 	return home;
 }
 #endif
@@ -199,7 +205,11 @@ std::vector<std::string> findDataFolders()
 	// Get user-specific data folders
 	if (char const *const xdg_data_home = getenv("XDG_DATA_HOME"))
  	{
+#ifdef __wii__
+		snprintf(path, MAXPATHLEN, "%s/", xdg_data_home);
+#else
 		snprintf(path, MAXPATHLEN, "%s/openxcom/", xdg_data_home);
+#endif
  	}
  	else
  	{
@@ -310,7 +320,11 @@ std::vector<std::string> findUserFolders()
 	// Get user folders
 	if (char const *const xdg_data_home = getenv("XDG_DATA_HOME"))
  	{
+#ifdef __wii__
+		snprintf(path, MAXPATHLEN, "%s/", xdg_data_home);
+#else
 		snprintf(path, MAXPATHLEN, "%s/openxcom/", xdg_data_home);
+#endif
  	}
  	else
  	{
@@ -321,13 +335,14 @@ std::vector<std::string> findUserFolders()
 #endif
  	}
 	list.push_back(path);
-
+#ifndef __wii__
 	// Get old-style folder
 	snprintf(path, MAXPATHLEN, "%s/.openxcom/", home);
 	list.push_back(path);
 
 	// Get working directory
 	list.push_back("./user/");
+#endif
 #endif
 
 	return list;
@@ -356,14 +371,16 @@ std::string findConfigFolder()
 	// Get config folders
 	if (char const *const xdg_config_home = getenv("XDG_CONFIG_HOME"))
 	{
+#ifdef __wii__
+		snprintf(path, MAXPATHLEN, "%s/", xdg_config_home);
+#else
 		snprintf(path, MAXPATHLEN, "%s/openxcom/", xdg_config_home);
+#endif
 		return path;
 	}
-	else
-	{
-		snprintf(path, MAXPATHLEN, "%s/.config/openxcom/", home);
-		return path;
-	}
+
+	snprintf(path, MAXPATHLEN, "%s/.config/openxcom/", home);
+	return path;
 #endif
 }
 
@@ -442,9 +459,13 @@ bool createFolder(const std::string &path)
 	else
 		return true;
 #else
+#ifndef __wii__
 	mode_t process_mask = umask(0);
 	int result = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	umask(process_mask);
+#else
+	int result = mkdir(path.c_str(), 0777);
+#endif
 	if (result == 0)
 		return true;
 	else
@@ -920,6 +941,7 @@ void setWindowIcon(int winResource, const std::string &)
 #else
 void setWindowIcon(int, const std::string &unixPath)
 {
+#ifndef __wii__
 	std::string utf8 = Unicode::convPathToUtf8(unixPath);
 	SDL_Surface *icon = IMG_Load(utf8.c_str());
 	if (icon != 0)
@@ -927,6 +949,7 @@ void setWindowIcon(int, const std::string &unixPath)
 		SDL_WM_SetIcon(icon, NULL);
 		SDL_FreeSurface(icon);
 	}
+#endif
 }
 #endif
 
@@ -936,6 +959,9 @@ void setWindowIcon(int, const std::string &unixPath)
  */
 void stackTrace(void *ctx)
 {
+#ifdef __wii__
+	Log(LOG_FATAL) << "Unfortunately, no stack trace information is available";
+#else
 #ifdef _WIN32
 #ifndef __NO_DBGHELP
 	const int MAX_SYMBOL_LENGTH = 1024;
@@ -1097,6 +1123,7 @@ void stackTrace(void *ctx)
 			Log(LOG_FATAL) << buf;
 		}
 	}
+#endif
 #endif
 	ctx = (void*)ctx;
 }
