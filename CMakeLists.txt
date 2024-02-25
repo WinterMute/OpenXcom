@@ -124,6 +124,13 @@ if ( UNIX )
 	link_libraries( ${CMAKE_DL_LIBS} )
 endif ()
 
+<<<<<<< Updated upstream
+=======
+if (NINTENDO_GAMECUBE OR NINTENDO_WII OR NINTENDO_3DS)
+  add_definitions(-D__NO_MUSIC -DNO_STACKTRACE -DNO_CRASHDUMP -DNO_POSIX_MEMALIGN -DNO_POPEN -DNO_UMASK -DNO_GETUID)
+endif ()
+
+>>>>>>> Stashed changes
 # Read version number
 set ( file "${CMAKE_SOURCE_DIR}/src/version.h" )
 file ( READ ${file} lines )

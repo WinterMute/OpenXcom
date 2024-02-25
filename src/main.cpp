@@ -120,7 +120,11 @@ int main(int argc, char *argv[])
 #ifndef NDEBUG
 	Logger::reportingLevel() = LOG_DEBUG;
 #else
+#ifdef __wii__
+	Logger::reportingLevel() = LOG_VERBOSE;
+#else
 	Logger::reportingLevel() = LOG_INFO;
+#endif
 #endif
 	if (!Options::init(argc, argv))
 		return EXIT_SUCCESS;

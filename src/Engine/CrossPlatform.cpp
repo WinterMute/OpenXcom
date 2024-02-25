@@ -1257,6 +1257,9 @@ std::string getExeFolder()
 		return ret;
 	}
 #endif
+#ifdef __wii__
+	return findConfigFolder() + "/";
+#endif
 	return std::string();
 }
 
