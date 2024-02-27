@@ -136,6 +136,10 @@ if (NINTENDO_GAMECUBE OR NINTENDO_WII OR NINTENDO_3DS)
   add_definitions(-DNO_STACKTRACE -DNO_CRASHDUMP -DNO_POSIX_MEMALIGN -DNO_POPEN -DNO_UMASK -DNO_GETUID)
 endif ()
 
+if (NINTENDO_GAMECUBE OR NINTENDO_WII OR NINTENDO_3DS OR WIN32)
+  add_definitions(-DNO_SYSTEM)
+endif()
+
 # Read version number
 set ( file "${CMAKE_SOURCE_DIR}/src/version.h" )
 file ( READ ${file} lines )

@@ -94,7 +94,7 @@ namespace CrossPlatform
  */
 void getErrorDialog()
 {
-#ifndef _WIN32
+#ifndef NO_SYSTEM
 	if (system(NULL))
 	{
 		if (getenv("KDE_SESSION_UID") && system("which kdialog 2>&1 > /dev/null") == 0)
@@ -231,8 +231,10 @@ std::vector<std::string> findDataFolders()
 #ifdef __APPLE__
 	list.push_back("/Users/Shared/OpenXcom/");
 #else
+#ifndef NO_SYSTEM
 	list.push_back("/usr/local/share/openxcom/");
 	list.push_back("/usr/share/openxcom/");
+#endif
 #ifdef DATADIR
 	snprintf(path, MAXPATHLEN, "%s/", DATADIR);
 	list.push_back(path);
@@ -929,6 +931,7 @@ void setWindowIcon(int winResource, const std::string &)
 #else
 void setWindowIcon(int, const std::string &unixPath)
 {
+#ifndef NO_SYSTEM
 	std::string utf8 = Unicode::convPathToUtf8(unixPath);
 	SDL_Surface *icon = IMG_Load(utf8.c_str());
 	if (icon != 0)
@@ -936,6 +939,7 @@ void setWindowIcon(int, const std::string &unixPath)
 		SDL_WM_SetIcon(icon, NULL);
 		SDL_FreeSurface(icon);
 	}
+#endif
 }
 #endif
 
@@ -1223,8 +1227,12 @@ bool openExplorer(const std::string &url)
 	std::string cmd = "open \"" + url + "\"";
 	return (system(cmd.c_str()) == 0);
 #else
+#ifndef NO_SYSTEM
 	std::string cmd = "xdg-open \"" + url + "\"";
 	return (system(cmd.c_str()) == 0);
+#else
+	return false;
+#endif
 #endif
 }
 
