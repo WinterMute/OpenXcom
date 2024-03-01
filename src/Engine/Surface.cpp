@@ -86,7 +86,7 @@ inline void* NewAligned(int bpp, int width, int height)
 
 #ifndef _WIN32
 
-	#ifdef __MORPHOS__
+#ifdef __MORPHOS__
 
 	buffer = calloc( total, 1 );
 	if (!buffer)
@@ -94,13 +94,22 @@ inline void* NewAligned(int bpp, int width, int height)
 		throw Exception("Failed to allocate surface");
 	}
 
-	#else
+#else
+#ifndef __wii__
 	int rc;
 	if ((rc = posix_memalign(&buffer, 16, total)))
 	{
 		throw Exception(strerror(rc));
 	}
-	#endif
+#else
+	buffer = aligned_alloc(16, total);
+	if(buffer == NULL) 
+	{
+		throw Exception("aligned_alloc");
+	}
+#endif
+
+#endif
 
 #else
 
@@ -350,14 +359,14 @@ void Surface::loadImage(const std::string &filename)
 			}
 		}
 	}
-
+#ifndef __wii__
 	// Otherwise default to SDL_Image
 	if (!_surface)
 	{
 		std::string utf8 = Unicode::convPathToUtf8(filename);
 		_surface = IMG_Load(utf8.c_str());
 	}
-
+#endif
 	if (!_surface)
 	{
 		std::string err = filename + ":" + IMG_GetError();

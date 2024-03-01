@@ -48,6 +48,7 @@ std::locale utf8;
  */
 void getUtf8Locale()
 {
+#ifndef __wii__
 	std::string loc;
 #ifndef _WIN32
 #ifndef NO_POPEN
@@ -84,6 +85,7 @@ void getUtf8Locale()
 		// Well we're stuck with the C locale, hope for the best
 	}
 	Log(LOG_INFO) << "Detected locale: " << utf8.name();
+#endif // __wii__
 }
 
 /**

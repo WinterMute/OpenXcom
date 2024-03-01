@@ -475,6 +475,9 @@ SurfaceSet *Mod::getSurfaceSet(const std::string &name, bool error)
  */
 Music *Mod::getMusic(const std::string &name, bool error) const
 {
+#ifdef __NO_MUSIC
+	return _muteMusic;
+#else
 	if (Options::mute)
 	{
 		return _muteMusic;
@@ -483,6 +486,7 @@ Music *Mod::getMusic(const std::string &name, bool error) const
 	{
 		return getRule(name, "Music", _musics, error);
 	}
+#endif
 }
 
 /**
@@ -492,6 +496,9 @@ Music *Mod::getMusic(const std::string &name, bool error) const
  */
 Music *Mod::getRandomMusic(const std::string &name) const
 {
+#ifdef __NO_MUSIC
+	return _muteMusic;
+#else
 	if (Options::mute)
 	{
 		return _muteMusic;
@@ -515,6 +522,7 @@ Music *Mod::getRandomMusic(const std::string &name) const
 			return music[RNG::seedless(0, music.size() - 1)];
 		}
 	}
+#endif
 }
 
 /**
@@ -524,6 +532,7 @@ Music *Mod::getRandomMusic(const std::string &name) const
  */
 void Mod::playMusic(const std::string &name, int id)
 {
+#ifndef __NO_MUSIC
 	if (!Options::mute && _playingMusic != name)
 	{
 		int loop = -1;
@@ -550,6 +559,7 @@ void Mod::playMusic(const std::string &name, int id)
 			_playingMusic = name;
 		}
 	}
+#endif
 }
 
 /**
@@ -570,6 +580,9 @@ SoundSet *Mod::getSoundSet(const std::string &name, bool error) const
  */
 Sound *Mod::getSound(const std::string &set, unsigned int sound, bool error) const
 {
+#ifdef __NO_MUSIC
+	return _muteSound;
+#else
 	if (Options::mute)
 	{
 		return _muteSound;
@@ -593,6 +606,7 @@ Sound *Mod::getSound(const std::string &set, unsigned int sound, bool error) con
 			return 0;
 		}
 	}
+#endif
 }
 
 /**
@@ -3367,7 +3381,7 @@ void Mod::loadExtraResources()
 	if (!Options::mute)
 	{
 		const std::set<std::string> &soundFiles(FileMap::getVFolderContents("SOUND"));
-
+		Log(LOG_INFO) << "Loading music... ";
 		// Check which music version is available
 		CatFile *adlibcat = 0, *aintrocat = 0;
 		GMCatFile *gmcat = 0;
@@ -3399,6 +3413,7 @@ void Mod::loadExtraResources()
 			}
 			if (music)
 			{
+				Log(LOG_INFO) << "Loading music " << music;
 				_musics[(*i).first] = music;
 			}
 
@@ -3407,6 +3422,10 @@ void Mod::loadExtraResources()
 		delete gmcat;
 		delete adlibcat;
 		delete aintrocat;
+	}
+	else 
+	{
+		Log(LOG_INFO) << "Music is disabled... ";
 	}
 #endif
 
@@ -3650,6 +3669,8 @@ Music *Mod::loadMusic(MusicFormat fmt, RuleMusic *rule, CatFile *adlibcat, CatFi
 
 			if (soundContents.find(fname) != soundContents.end())
 			{
+				std::transform(fname.begin(), fname.end(), fname.begin(), ::toupper);
+				Log(LOG_INFO) << "A " << FileMap::getFilePath("SOUND/" + fname);
 				music = new Music();
 				music->load(FileMap::getFilePath("SOUND/" + fname));
 			}
