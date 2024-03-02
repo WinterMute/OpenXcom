@@ -87,6 +87,22 @@ Game *game = 0;
 // programming license revoked...
 int main(int argc, char *argv[])
 {
+#ifdef __wii__
+	static char home[64];
+	static char data_home[64];
+	static char config_home[64];
+	
+	strcpy(home,"HOME=sd:/apps/OpenXcom");	
+	putenv(home);
+	
+	strcpy(data_home,"XDG_DATA_HOME=sd:/OpenXcom");	
+	putenv(data_home);
+	
+	strcpy(config_home,"XDG_CONFIG_HOME=sd:/OpenXcom");	
+	putenv(config_home);
+
+#endif
+	
 #ifdef _MSC_VER
 	// Uncomment to check memory leaks in VS
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
@@ -104,7 +120,11 @@ int main(int argc, char *argv[])
 #ifndef NDEBUG
 	Logger::reportingLevel() = LOG_DEBUG;
 #else
-	Logger::reportingLevel() = LOG_INFO;
+#ifdef __wii__
+	Logger::reportingLevel() = LOG_VERBOSE;
+#else
+ 	Logger::reportingLevel() = LOG_INFO;
+#endif
 #endif
 	if (!Options::init(argc, argv))
 		return EXIT_SUCCESS;

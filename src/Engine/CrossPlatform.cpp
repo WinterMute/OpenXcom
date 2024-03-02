@@ -203,7 +203,11 @@ std::vector<std::string> findDataFolders()
 	// Get user-specific data folders
 	if (char const *const xdg_data_home = getenv("XDG_DATA_HOME"))
  	{
+#ifdef __wii__
+		snprintf(path, MAXPATHLEN, "%s/", xdg_data_home);
+#else
 		snprintf(path, MAXPATHLEN, "%s/openxcom/", xdg_data_home);
+#endif
  	}
  	else
  	{
@@ -316,7 +320,11 @@ std::vector<std::string> findUserFolders()
 	// Get user folders
 	if (char const *const xdg_data_home = getenv("XDG_DATA_HOME"))
  	{
+#ifdef __wii__
+		snprintf(path, MAXPATHLEN, "%s/", xdg_data_home);
+#else
 		snprintf(path, MAXPATHLEN, "%s/openxcom/", xdg_data_home);
+#endif
  	}
  	else
  	{
@@ -327,13 +335,14 @@ std::vector<std::string> findUserFolders()
 #endif
  	}
 	list.push_back(path);
-
+#ifndef __wii__
 	// Get old-style folder
 	snprintf(path, MAXPATHLEN, "%s/.openxcom/", home);
 	list.push_back(path);
 
 	// Get working directory
 	list.push_back("./user/");
+#endif
 #endif
 
 	return list;
@@ -362,14 +371,16 @@ std::string findConfigFolder()
 	// Get config folders
 	if (char const *const xdg_config_home = getenv("XDG_CONFIG_HOME"))
 	{
+#ifdef __wii__
+		snprintf(path, MAXPATHLEN, "%s/", xdg_config_home);
+#else
 		snprintf(path, MAXPATHLEN, "%s/openxcom/", xdg_config_home);
+#endif
 		return path;
 	}
-	else
-	{
-		snprintf(path, MAXPATHLEN, "%s/.config/openxcom/", home);
-		return path;
-	}
+
+	snprintf(path, MAXPATHLEN, "%s/.config/openxcom/", home);
+	return path;
 #endif
 }
 
@@ -453,9 +464,13 @@ bool createFolder(const std::string &path)
 	else
 		return true;
 #else
+#ifndef __wii__
 	mode_t process_mask = umask(0);
 	int result = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	umask(process_mask);
+#else
+	int result = mkdir(path.c_str(), 0777);
+#endif
 	if (result == 0)
 		return true;
 	else
@@ -949,7 +964,9 @@ void setWindowIcon(int, const std::string &unixPath)
  */
 void stackTrace(void *ctx)
 {
-#ifndef NO_STACKTRACE
+#ifdef NO_STACKTRACE
+	Log(LOG_FATAL) << "Unfortunately, no stack trace information is available";
+#else
 #ifdef _WIN32
 #ifndef __NO_DBGHELP
 	const int MAX_SYMBOL_LENGTH = 1024;
@@ -1112,8 +1129,8 @@ void stackTrace(void *ctx)
 		}
 	}
 #endif
-	ctx = (void*)ctx;
 #endif
+	ctx = (void*)ctx;
 }
 
 /**
@@ -1150,7 +1167,6 @@ std::string now()
  */
 void crashDump(void *ex, const std::string &err)
 {
-#ifndef NO_CRASHDUMP
 	std::ostringstream error;
 #ifdef _MSC_VER
 	PEXCEPTION_POINTERS exception = (PEXCEPTION_POINTERS)ex;
@@ -1211,7 +1227,6 @@ void crashDump(void *ex, const std::string &err)
 	msg << "More details here: " << Logger::logFile() << std::endl;
 	msg << "If this error was unexpected, please report it to the developers.";
 	showError(msg.str());
-#endif
 }
 
 /**
@@ -1251,7 +1266,11 @@ std::string getExeFolder()
 		return ret;
 	}
 #endif
+#ifdef __wii__
+	return findConfigFolder();
+#else
 	return std::string();
+#endif
 }
 
 }
